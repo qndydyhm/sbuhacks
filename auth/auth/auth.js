@@ -19,7 +19,7 @@ function authManager() {
     signToken = function (user) {
         return jwt.sign({
             userId: user._id
-        }, config.JWT_SECRET);
+        }, config.JWT_SECRET, { expiresIn: '1hr' });
     }
 
     return this;

@@ -6,12 +6,15 @@ const rabbitMQ = config.rabbitMQ
 const amqp = require('amqplib/callback_api');
 
 postThread = async (req, res) => {
-    console.log("cookies: ", req.cookies)
+    console.log("cookies: ", req.cookies.token)
+    req.body.cookie = req.cookies.token;
     req = req.body;
     return await assert("postThread", req, res);
 }
 
 postComment = async (req, res) => {
+    console.log("cookies: ", req.cookies.token)
+    req.body.cookie = req.cookies.token;
     req = req.body;
     return await assert("postComment", req, res);
 }
@@ -88,17 +91,7 @@ const assert = async (queueName, req, res) => {
                     if (msg.properties.correlationId == correlationId) {
                         console.log(' [.] Got %s', msg.content.toString());
                         msg = JSON.parse(msg.content)
-                        console.log(msg.cookie)
-                        if (msg.cookie) {
-                            res.cookie("token", msg.cookie, {
-                                httpOnly: true,
-                                secure: true,
-                                sameSite: "lax"
-                            }).status(msg.status).send(msg.body)
-                        }
-                        else {
-                            res.status(msg.status).send(msg.body)
-                        }
+                        res.status(msg.status).send(msg.body)
                         setTimeout(function () {
                             connection.close();
                         }, 500);

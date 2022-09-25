@@ -25,7 +25,7 @@ const postThread = async (req) => {
         console.log(req);
         const { title, category, tags, images, content, cookie } = req;
 
-        if (!title || !category || !tags || !cookie || images === undefined || content === undefined) {
+        if (!title || category === undefined || !tags || !cookie || images === undefined || content === undefined) {
             return errorMsg(400, "Missing Paratemers")
         }
 
@@ -68,12 +68,13 @@ const postThread = async (req) => {
             return JSON.stringify(res);
         }).catch(err => {
             console.log("New thread error -- not created");
-            return server_error();
+            console.log(errorMsg(500, "Server Error"))
+            return errorMsg(500, "Server Error");
         });
     }
     catch (err) {
         console.error(err);
-        return server_error();
+        return errorMsg(500, "Server Error")
     }
 }
 
@@ -386,7 +387,7 @@ amqp.connect(rabbitMQ, function (error0, connection) {
 //     }).catch(err => {
 //         console.log("Forum deletion error");
 //         console.log(err);
-//         return server_error();
+//         return errorMsg(500, "Server Error")
 //     });
 
 // }
@@ -427,12 +428,12 @@ amqp.connect(rabbitMQ, function (error0, connection) {
 //         }).catch(err => {
 //             console.log("Thread favorite error");
 //             console.log(err);
-//             return server_error();
+//             return errorMsg(500, "Server Error")
 //         })
 //     }).catch(err => {
 //         console.log("User favorite error");
 //         console.log(err);
-//         return server_error();
+//         return errorMsg(500, "Server Error")
 //     });
 // }
 
@@ -471,12 +472,12 @@ amqp.connect(rabbitMQ, function (error0, connection) {
 //         }).catch(err => {
 //             console.log("Thread unfavorite error");
 //             console.log(err);
-//             return server_error();
+//             return errorMsg(500, "Server Error")
 //         })
 //     }).catch(err => {
 //         console.log("User unfavorite error");
 //         console.log(err);
-//         return server_error();
+//         return errorMsg(500, "Server Error")
 //     });
 // }
 

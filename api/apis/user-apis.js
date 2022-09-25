@@ -49,7 +49,7 @@ const assert = async (queueName, req, res) => {
                     if (msg.properties.correlationId == correlationId) {
                         console.log(' [.] Got %s', msg.content.toString());
                         msg = JSON.parse(msg.content)
-                        console.log(msg.cookie)
+                        console.log(msg)
                         if (msg.cookie) {
                             res.cookie("token", msg.cookie, {
                                 httpOnly: true,
