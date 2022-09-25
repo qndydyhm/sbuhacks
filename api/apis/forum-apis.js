@@ -6,6 +6,7 @@ const rabbitMQ = config.rabbitMQ
 const amqp = require('amqplib/callback_api');
 
 postThread = async (req, res) => {
+    console.log("cookies: ", req.cookies)
     req = req.body;
     return await assert("postThread", req, res);
 }
@@ -83,7 +84,7 @@ const assert = async (queueName, req, res) => {
                 console.log(' [x] Requesting: ', req);
 
                 channel.consume(q.queue, function (msg) {
-                    console.log(msg)
+                    // console.log(msg)
                     if (msg.properties.correlationId == correlationId) {
                         console.log(' [.] Got %s', msg.content.toString());
                         msg = JSON.parse(msg.content)
