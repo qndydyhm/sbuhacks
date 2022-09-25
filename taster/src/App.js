@@ -6,7 +6,7 @@ const App = () => {
 
   return (
       <BrowserRouter>
-        <Banner mode={0}/>
+        {/* <Banner mode={0}/> */}
         <Routes>
             <Route exact path="/login/" element={< Login />} />
             <Route exact path="/register/" element={< Register />} />

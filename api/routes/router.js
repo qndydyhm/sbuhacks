@@ -9,11 +9,12 @@ router.get('/logout', UserAPI.logoutUser)
 
 
 router.post('/postthread', ForumAPI.postThread)
-router.get('/getCookThreadList',ForumAPI.getCookThreadList);
-router.get('/getEatThreadList',ForumAPI.getEatThreadList);
-router.get('getThread',ForumAPI.getThread);
-router.search('/searchCookThread',ForumAPI.searchCookThread);
-router.search('/searchEatThread',ForumAPI.searchEatThread);
+router.post('/postcomment', ForumAPI.postComment)
+router.get('/getcookthreadList',ForumAPI.getCookThreadList);
+router.get('/geteatthreadList',ForumAPI.getEatThreadList);
+router.get('/getthread',ForumAPI.getThread);
+router.get('/searchcookthread',ForumAPI.searchCookThread);
+router.get('/searcheatthread',ForumAPI.searchEatThread);
 
 
 module.exports = router
