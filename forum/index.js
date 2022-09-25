@@ -10,24 +10,11 @@ const rabbitMQ = config.rabbitMQ
 
 db.on('error', console.error.bind(console, "MongoDB Atlas connection error"))
 
-errorMSG=(val,message)=>{
+const errorMsg=(val,message)=>{
     let res={
         status:val,
          body:{
             msg:message
-        }
-    }
-    return JSON.stringify(res);
-}
-
-
-
-
-serverError = () => {
-    let res = {
-        status: 500,
-        body: {
-            msg: "Server error"
         }
     }
     return JSON.stringify(res);
@@ -39,7 +26,7 @@ postThread = async (req) => {
         const { title, author, category, tags, images, content } = req;
 
         if (!title || !author || !category || !tags || images === undefined || content === undefined) {
-            return error_400("Missing Paratemers")
+            return errorMsg(400, "Missing Paratemers")
         }
 
         let image_ids = [];
@@ -87,13 +74,11 @@ postComment = async (req) => {
     const {id, cookie, content} = req;
     let thread = Thread.findById({_id: id})
     if (!thread) {
-        // error
-        return
+        return errorMsg(400, "Fail to find thread")
     }
     author = tool.getUserByToken(cookie)
     if (!author) {
-        //error
-        return
+        return errorMsg(400, "Fail to find userId")
     }
     const newComment = new Comment({
         forum: id,
@@ -119,7 +104,7 @@ getCookThreadList = async (req) => {
     let threads = await Thread.find({category: false}).sort('updatedAt', -1).skip(10 * page)
     .limit(page)
     if (!threads) {
-        return errorMSG(404,"Index out of range");
+        return errorMsg(404,"Index out of range");
     }
     else {
         for (let index = 0; index < threads.length; index++) {
@@ -156,7 +141,7 @@ getThread = async (req) => {
     else {
         const thread = await Thread.findById({ _id: id })
         if (!thread) {
-            return errorMSG(500,"Thread does not exist!");
+            return errorMsg(500,"Thread does not exist!");
         }
         else {
             // TODO image
@@ -164,10 +149,10 @@ getThread = async (req) => {
                 const commentId = thread.comments[index];
                 let comment = Comment.findById({_id: commentId})
                 if (!comment) {
-                    return errorMSG(500, "Internal error");
+                    return errorMsg(500, "Internal error");
                 }
                 if (comment.forum !== id) {
-                    return errorMSG(500,"Internal error");
+                    return errorMsg(500,"Internal error");
                 }
                 let author = tool.getUserById(comment.author)
                 if (author) {
