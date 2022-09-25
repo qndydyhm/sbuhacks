@@ -15,6 +15,15 @@ loginUser = async (req, res) => {
     return await assert("login", req, res);
 }
 
+logoutUser = async (req, res) => {
+    return await res.cookie("token", '', {
+        httpOnly: true,
+        secure: true,
+        sameSite: "lax"
+    }).status(200).json({
+        success: true
+    })
+}
 
 const assert = async (queueName, req, res) => {
     amqp.connect(rabbitMQ, function (error0, connection) {
@@ -75,4 +84,5 @@ const assert = async (queueName, req, res) => {
 module.exports = {
     registerUser,
     loginUser,
+    logoutUser,
 }
