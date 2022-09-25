@@ -1,0 +1,140 @@
+@font-face {
+    font-family: "Poppins Regular";
+    src: url('../assets/Poppins/Poppins-Regular.ttf');
+}
+
+@font-face {
+    font-family: "Poppins SemiBold";
+    src: url('../assets/Poppins/Poppins-SemiBold.ttf');
+}
+
+@font-face {
+    font-family: "Poppins Bold";
+    src: url('../assets/Poppins/Poppins-SemiBold.ttf');
+}
+
+.login-screen, .register-screen {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    background-image: url("../../assets/images/roast-chicken.jpg");
+    background-size: 100%;
+    overflow: hidden;
+}
+
+.login-modal, .register-modal {
+    margin-top: 250px;
+    display: flex;
+    flex-direction: column;
+    background-color: transparent;
+    width: 400px;
+    height: 220px;
+    padding: 20px;
+    padding-top: 30px;
+    z-index: 10;
+}
+
+.register-modal {
+    height: 600px;
+    margin-top: 175px;
+}
+
+.login-label, .register-label {
+    margin-top: 20px;
+    font-family: "Poppins Regular";
+    color: black;
+}
+
+.login-field, .register-field {
+    width: 100%;
+    height: 30px;
+    background-color: white;
+    border: 2px solid white;
+    border-radius: 3px;
+    font-family: "Poppins Regular";
+    font-size: 16px;
+}
+
+.login-btn, .register-btn {
+    width: 200px;
+    height: 36px;
+    background-color: black;
+    color: white;
+    font-family: "Poppins Regular";
+    font-size: 16px;
+    margin-top: 20px;
+    margin-left: 100px;
+}
+
+.login-blur, .register-blur {
+    position: absolute;
+    margin-top: 250px;
+    background-color: white;
+    opacity: 0.7;
+    width: 525px;
+    height: 250px;
+    padding: 20px;
+}
+
+.register-blur {
+    height: 425px;
+    margin-top: 175px;
+}
+
+#website-banner {
+    background-color: #FFCC84;
+    display: flex;
+}
+
+#website-name {
+    font-family: "Poppins Bold";
+    font-size: 32px;
+    width: 12%;
+}
+
+#website-flavors {
+    font-family: "Poppins SemiBold";
+    font-size: 18px;
+    margin-top: 10px;
+    width: 35%;
+}
+
+#searchbar {
+    width: 25%;
+    font-size: 20px;
+    background-color: white;
+    height: 32px;
+    margin-top: 8px;
+    opacity: 0.8;
+    border: 0.5px solid orange;
+    border-radius: 5px;
+}
+
+#website-mode {
+    display: flex;
+    height: 35px;
+    font-family: "Poppins SemiBold";
+    margin-left: 5%;
+    margin-top: 5px;
+    width: 10%;
+    background-color: white;
+    border-radius: 16px;
+}
+
+.website-mode-on {
+    border-radius: 16px;
+    background-color: black;
+    color: white;
+    width: 55%;
+    text-align: center;
+    padding-top: 4px;
+}
+
+.website-mode-off {
+   width: 45%;
+   text-align: center;
+   padding-top: 4px;
+}
+
+
