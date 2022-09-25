@@ -10,6 +10,11 @@ postThread = async (req, res) => {
     return await assert("postThread", req, res);
 }
 
+postComment = async (req, res) => {
+    req = req.body;
+    return await assert("postComment", req, res);
+}
+
 getCookThreadList = async (req, res) => {
     req = req.body;
     return await assert("getCookThreadList", req, res);
@@ -116,6 +121,7 @@ const assert = async (queueName, req, res) => {
 
 module.exports = {
     postThread,
+    postComment,
     getCookThreadList,
     getEatThreadList,
     getThread,

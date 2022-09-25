@@ -80,7 +80,36 @@ postThread = async (req) => {
     }
 }
 
+postComment = async (req) => {
+    const {id, cookie, content} = req;
+    let thread = Thread.findById({_id: id})
+    if (!thread) {
+        // error
+        return
+    }
+    author = tool.getUserByToken(cookie)
+    if (!author) {
+        //error
+        return
+    }
+    const newComment = new Comment({
+        forum: id,
+        author: author.id,
+        content: content
+    });
+    const savedComment = await newComment.save();
 
+    thread.comment.push(savedComment._id)
+    thread.save().then(() => {
+        let res = {
+            status: 200,
+            body: {
+                msg: 'OK'
+            }
+        }
+        return JSON.stringify(res)
+    })
+}
 
 getCookThreadList = async (req) => {
     const {page} = req
@@ -184,6 +213,8 @@ getThread = async (req) => {
 
 
 const amqp = require('amqplib/callback_api');
+const { postComment } = require('../api/apis/forum-apis')
+const auth = require('../auth/auth/auth')
 amqp.connect(rabbitMQ, function (error0, connection) {
     if (error0) {
         throw error0;
@@ -192,7 +223,7 @@ amqp.connect(rabbitMQ, function (error0, connection) {
         if (error1) {
             throw error1;
         }
-        var queue = 'create_forum';
+        var queue = 'postThread';
 
         channel.assertQueue(queue, {
             durable: false
@@ -200,7 +231,7 @@ amqp.connect(rabbitMQ, function (error0, connection) {
         channel.prefetch(1);
         console.log(' [x] Awaiting RPC requests');
         channel.consume(queue, function reply(msg) {
-            create_forum(JSON.parse(msg.content.toString())).then((res) => {
+            postThread(JSON.parse(msg.content.toString())).then((res) => {
                 channel.sendToQueue(msg.properties.replyTo,
                     Buffer.from(res.toString()), {
                     correlationId: msg.properties.correlationId
@@ -215,7 +246,7 @@ amqp.connect(rabbitMQ, function (error0, connection) {
         if (error1) {
             throw error1;
         }
-        var queue = 'login';
+        var queue = 'postComment';
 
         channel.assertQueue(queue, {
             durable: false
@@ -223,7 +254,122 @@ amqp.connect(rabbitMQ, function (error0, connection) {
         channel.prefetch(1);
         console.log(' [x] Awaiting RPC requests');
         channel.consume(queue, function reply(msg) {
-            login(JSON.parse(msg.content.toString())).then((res) => {
+            postComment(JSON.parse(msg.content.toString())).then((res) => {
+                channel.sendToQueue(msg.properties.replyTo,
+                    Buffer.from(res.toString()), {
+                    correlationId: msg.properties.correlationId
+                });
+
+                channel.ack(msg);
+            })
+        });
+    });
+
+    connection.createChannel(function (error1, channel) {
+        if (error1) {
+            throw error1;
+        }
+        var queue = 'getCookThreadList';
+
+        channel.assertQueue(queue, {
+            durable: false
+        });
+        channel.prefetch(1);
+        console.log(' [x] Awaiting RPC requests');
+        channel.consume(queue, function reply(msg) {
+            getCookThreadList(JSON.parse(msg.content.toString())).then((res) => {
+                channel.sendToQueue(msg.properties.replyTo,
+                    Buffer.from(res.toString()), {
+                    correlationId: msg.properties.correlationId
+                });
+
+                channel.ack(msg);
+            })
+        });
+    });
+
+    connection.createChannel(function (error1, channel) {
+        if (error1) {
+            throw error1;
+        }
+        var queue = 'getEatThreadList';
+
+        channel.assertQueue(queue, {
+            durable: false
+        });
+        channel.prefetch(1);
+        console.log(' [x] Awaiting RPC requests');
+        channel.consume(queue, function reply(msg) {
+            getEatThreadList(JSON.parse(msg.content.toString())).then((res) => {
+                channel.sendToQueue(msg.properties.replyTo,
+                    Buffer.from(res.toString()), {
+                    correlationId: msg.properties.correlationId
+                });
+
+                channel.ack(msg);
+            })
+        });
+    });
+
+    connection.createChannel(function (error1, channel) {
+        if (error1) {
+            throw error1;
+        }
+        var queue = 'getThread';
+
+        channel.assertQueue(queue, {
+            durable: false
+        });
+        channel.prefetch(1);
+        console.log(' [x] Awaiting RPC requests');
+        channel.consume(queue, function reply(msg) {
+            getThread(JSON.parse(msg.content.toString())).then((res) => {
+                channel.sendToQueue(msg.properties.replyTo,
+                    Buffer.from(res.toString()), {
+                    correlationId: msg.properties.correlationId
+                });
+
+                channel.ack(msg);
+            })
+        });
+    });
+
+    connection.createChannel(function (error1, channel) {
+        if (error1) {
+            throw error1;
+        }
+        var queue = 'searchCookThread';
+
+        channel.assertQueue(queue, {
+            durable: false
+        });
+        channel.prefetch(1);
+        console.log(' [x] Awaiting RPC requests');
+        channel.consume(queue, function reply(msg) {
+            searchCookThread(JSON.parse(msg.content.toString())).then((res) => {
+                channel.sendToQueue(msg.properties.replyTo,
+                    Buffer.from(res.toString()), {
+                    correlationId: msg.properties.correlationId
+                });
+
+                channel.ack(msg);
+            })
+        });
+    });
+
+    connection.createChannel(function (error1, channel) {
+        if (error1) {
+            throw error1;
+        }
+        var queue = 'searchEatThread';
+
+        channel.assertQueue(queue, {
+            durable: false
+        });
+        channel.prefetch(1);
+        console.log(' [x] Awaiting RPC requests');
+        channel.consume(queue, function reply(msg) {
+            searchEatThread(JSON.parse(msg.content.toString())).then((res) => {
                 channel.sendToQueue(msg.properties.replyTo,
                     Buffer.from(res.toString()), {
                     correlationId: msg.properties.correlationId
