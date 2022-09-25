@@ -200,6 +200,34 @@ unfavorite = async(req) => {
 }
 
 
+get_random_thread_list = async(req) => {
+
+}
+
+get_cook_thread_list = async(req) => {
+
+}
+
+get_eat_thread_list = async(req) => {
+
+}
+
+get_cook_thread = async(req) => {
+
+}
+
+get_eat_thread = async(req) => {
+
+}
+
+search_cook_thread = async(req) => {
+
+}
+
+search_eat_thread = async(req) => {
+
+}
+
 
 const amqp = require('amqplib/callback_api');
 amqp.connect(rabbitMQ, function (error0, connection) {
