@@ -2,11 +2,11 @@ const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 const ObjectId = Schema.Types.ObjectId
 
-const ForumSchema = new Schema(
+const ThreadSchema = new Schema(
     {
         title: { type: String, required: true },
         author: { type: ObjectId, required: true },
-        category: { type: Boolean, required: true },
+        category: { type: Boolean, required: true }, // false = cook, true = eat
         tags: { type: [String], required: true },
         images: { type: [ObjectId], required: true },
         content: { type: String, required: true }, 
@@ -16,4 +16,4 @@ const ForumSchema = new Schema(
     { timestamps: true }
 )
 
-module.exports = mongoose.model('Thread', ForumSchema);
+module.exports = mongoose.model('Thread', ThreadSchema);

@@ -1,9 +1,10 @@
 #!/usr/bin/env node
-const Thread = require('./models/thread-model')
 const db = require('./db/db')
 const config = require('./config')
-const Thread = require('.models/forum-model')
+const Thread = require('./models/thread-model')
+const Comment = require('./models/comment-model')
 const Image = require('./models/image-model')
+const tool = require('./tool/tool')
 
 const rabbitMQ = config.rabbitMQ
 
@@ -78,6 +79,162 @@ postThread = async (req) => {
         return server_error();
     }
 }
+
+
+
+getCookThreadList = async (req) => {
+    const {page} = req
+    let threads = await Thread.find({category: false}).sort('updatedAt', -1).skip(10 * page)
+    .limit(page)
+    if (!threads) {
+        let res = {
+            status: 404,
+            body: {
+                msg: "Index out of range"
+            }
+        }
+        return JSON.stringify(res)
+    }
+    else {
+        for (let index = 0; index < threads.length; index++) {
+            const thread = threads[index];
+            let author = tool.getUserById(thread.author)
+            if (author) {
+                thread.author = author.name;
+            }
+            thread.category = "Cook"
+            // TODO image
+            thread.comments = thread.comments.length
+        }
+        let res = {
+            status: 200,
+            threadlist: threads,
+            body: {
+                msg: "OK"
+            }
+        }
+        return JSON.stringify(res)
+    }
+}
+
+getEatThreadList = async (req) => {
+    //TODO, after testing getCookThreadList
+}
+
+getThread = async (req) => {
+    const { id } = req;
+    if (!id) {
+        let res = {
+            status: 400,
+            body: "Missing parameters",
+        }
+        return JSON.stringify(res);
+    }
+    else {
+        const thread = await Thread.findById({ _id: id })
+        if (!thread) {
+            let res = {
+                status: 500,
+                body: {
+                    msg: "Thread does not exist!"
+                }
+            }
+            return JSON.stringify(res)
+        }
+        else {
+            // TODO image
+            for (let index = 0; index < thread.comments.length; index++) {
+                const commentId = thread.comments[index];
+                let comment = Comment.findById({_id: commentId})
+                if (!comment) {
+                    let res = {
+                        status: 500,
+                        body: {
+                            msg: "Internal error"
+                        }
+                    }
+                    return JSON.stringify(res)
+                }
+                if (comment.forum !== id) {
+                    let res = {
+                        status: 500,
+                        body: {
+                            msg: "Internal error"
+                        }
+                    }
+                    return JSON.stringify(res)
+                }
+                let author = tool.getUserById(comment.author)
+                if (author) {
+                    comment.author = author.name;
+                }
+            }
+            let res = {
+                status: 200,
+                thread: thread,
+                body: {
+                    msg: "OK"
+                }
+            }
+            return JSON.stringify(res)
+        }
+    }
+}
+
+
+
+const amqp = require('amqplib/callback_api');
+amqp.connect(rabbitMQ, function (error0, connection) {
+    if (error0) {
+        throw error0;
+    }
+    connection.createChannel(function (error1, channel) {
+        if (error1) {
+            throw error1;
+        }
+        var queue = 'create_forum';
+
+        channel.assertQueue(queue, {
+            durable: false
+        });
+        channel.prefetch(1);
+        console.log(' [x] Awaiting RPC requests');
+        channel.consume(queue, function reply(msg) {
+            create_forum(JSON.parse(msg.content.toString())).then((res) => {
+                channel.sendToQueue(msg.properties.replyTo,
+                    Buffer.from(res.toString()), {
+                    correlationId: msg.properties.correlationId
+                });
+
+                channel.ack(msg);
+            })
+        });
+    });
+
+    connection.createChannel(function (error1, channel) {
+        if (error1) {
+            throw error1;
+        }
+        var queue = 'login';
+
+        channel.assertQueue(queue, {
+            durable: false
+        });
+        channel.prefetch(1);
+        console.log(' [x] Awaiting RPC requests');
+        channel.consume(queue, function reply(msg) {
+            login(JSON.parse(msg.content.toString())).then((res) => {
+                channel.sendToQueue(msg.properties.replyTo,
+                    Buffer.from(res.toString()), {
+                    correlationId: msg.properties.correlationId
+                });
+
+                channel.ack(msg);
+            })
+        });
+    });
+});
+
 
 // update_thread = async(req) => {
 //     console.log(req);
@@ -214,106 +371,3 @@ postThread = async (req) => {
 // getRandomThreadList = async(req) => {
 
 // }
-
-getCookThreadList = async (req) => {
-
-}
-
-getEatThreadList = async (req) => {
-
-}
-
-getThread = async (req) => {
-    const { id } = req;
-    if (!id) {
-        let res = {
-            status: 400,
-            body: "Missing parameters",
-        }
-        return JSON.stringify(res);
-    }
-    else {
-        const thread = await Thread.findById({ _id: id })
-        if (!thread) {
-            let res = {
-                status: 500,
-                body: {
-                    msg: "Thread does not exist!"
-                }
-            }
-            return JSON.stringify(res)
-        }
-        else {
-            // TODO image
-            for (let index = 0; index < thread.comments.length; index++) {
-                const comment = thread.comments[index];
-                
-            }
-        }
-    }
-}
-
-get_eat_thread = async (req) => {
-
-}
-
-search_cook_thread = async (req) => {
-
-}
-
-search_eat_thread = async (req) => {
-
-}
-
-
-const amqp = require('amqplib/callback_api');
-amqp.connect(rabbitMQ, function (error0, connection) {
-    if (error0) {
-        throw error0;
-    }
-    connection.createChannel(function (error1, channel) {
-        if (error1) {
-            throw error1;
-        }
-        var queue = 'create_forum';
-
-        channel.assertQueue(queue, {
-            durable: false
-        });
-        channel.prefetch(1);
-        console.log(' [x] Awaiting RPC requests');
-        channel.consume(queue, function reply(msg) {
-            create_forum(JSON.parse(msg.content.toString())).then((res) => {
-                channel.sendToQueue(msg.properties.replyTo,
-                    Buffer.from(res.toString()), {
-                    correlationId: msg.properties.correlationId
-                });
-
-                channel.ack(msg);
-            })
-        });
-    });
-
-    connection.createChannel(function (error1, channel) {
-        if (error1) {
-            throw error1;
-        }
-        var queue = 'login';
-
-        channel.assertQueue(queue, {
-            durable: false
-        });
-        channel.prefetch(1);
-        console.log(' [x] Awaiting RPC requests');
-        channel.consume(queue, function reply(msg) {
-            login(JSON.parse(msg.content.toString())).then((res) => {
-                channel.sendToQueue(msg.properties.replyTo,
-                    Buffer.from(res.toString()), {
-                    correlationId: msg.properties.correlationId
-                });
-
-                channel.ack(msg);
-            })
-        });
-    });
-});
