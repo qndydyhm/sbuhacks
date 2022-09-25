@@ -38,10 +38,19 @@ const assert = async (queueName, req, res) => {
                 channel.consume(q.queue, function (msg) {
                     console.log(msg)
                     if (msg.properties.correlationId == correlationId) {
-                        console.log(msg)
                         console.log(' [.] Got %s', msg.content.toString());
                         msg = JSON.parse(msg.content)
-                        res.status(msg.status).send(msg.body)
+                        console.log(msg.cookie)
+                        if (msg.cookie) {
+                            res.cookie("token", msg.cookie, {
+                                httpOnly: true,
+                                secure: true,
+                                sameSite: "lax"
+                            }).status(msg.status).send(msg.body)
+                        }
+                        else {
+                            res.status(msg.status).send(msg.body)
+                        }
                         setTimeout(function () {
                             connection.close();
                         }, 500);
