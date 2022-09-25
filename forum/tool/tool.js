@@ -83,3 +83,8 @@ const getUserByToken = async (token) => {
         });
     });
 }
+
+module.exports = {
+    getUserById,
+    getUserByToken
+}
