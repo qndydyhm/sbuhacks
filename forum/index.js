@@ -12,7 +12,7 @@ db.on('error', console.error.bind(console, "MongoDB Atlas connection error"))
 post_thread = async(req) => {
     try {
         console.log(req);
-        const { title, author, category, tags, images, content, comments, favorited_by } = req.body;
+        const { title, author, category, tags, images, content, comments, favorited_by } = req;
 
         if (!title || !author || !category || !tags || !images || !content || !comments || !favorited_by ) {
             let res = {
@@ -43,8 +43,8 @@ post_thread = async(req) => {
     catch (err) {
         console.error(err);
         let res = {
-        status: 500,
-        body: "server error"
+            status: 500,
+            body: "server error"
         }
         return JSON.stringify(res)
     }
@@ -52,7 +52,7 @@ post_thread = async(req) => {
 
 update_thread = async(req) => {
     console.log(req);
-    const { id, title, author, category, tags, images, content, comments, favorited_by } = req.body;
+    const { id, title, author, category, tags, images, content, comments, favorited_by } = req;
 
     if ( !id || !title || !author || !category || !tags || !images || !content || !comments || !favorited_by ) {
         let res = {
@@ -62,8 +62,144 @@ update_thread = async(req) => {
         return JSON.stringify(res);
     }
 
-    
+    const forum = Forum.findById(id);
+    if (!forum) {
+        let res = {
+            status: 400,
+            body: "Thread does not exist",
+        }
+        return JSON.stringify(res);
+    }
+
+    let res = {
+        status: 200,
+        body: forum
+    }
+    return JSON.stringify(res);
+
 }
+
+
+delete_thread = async(req) => {
+    console.log(req);
+    const { id } = req;
+    if (!id) {
+        let res = {
+            status: 400,
+            body: "Missing parameters",
+        }
+        return JSON.stringify(res);
+    }
+
+    await Forum.findByIdAndDelete(id);
+    let res = {
+        status: 200,
+        body: "Ok"
+    }
+    return JSON.stringify(res);
+}
+
+
+favorite = async(req) => {
+    const { id, forum_id } = req;
+    if ( !id || !forum_id ) {
+        let res = {
+            status: 400,
+            body: "Missing parameters",
+        }
+        return JSON.stringify(res);
+    }
+
+    let user = User.findById(id);
+    if (!user) {
+        let res = {
+            status: 400,
+            body: "User does not exist",
+        }
+        return JSON.stringify(res);
+    }
+
+    let forum = Forum.findById(forum_id);
+    if (!forum) {
+        let res = {
+            status: 400,
+            body: "Thread does not exist",
+        }
+        return JSON.stringify(res);
+    }
+
+    let found = user.favorites.indexOf(forum_id)
+    if (found >= 0) {
+        let res = {
+            status: 400,
+            body: "Thread already favorited",
+        }
+        return JSON.stringify(res);
+    }
+    user.favorites.push(forum_id);
+    forum.favorited_by++;
+
+    await user.save();
+    await forum.save();
+
+    let res = {
+        status: 200,
+        body: "Ok"
+    }
+    return JSON.stringify(res);
+}
+
+
+unfavorite = async(req) => {
+    const { id, forum_id } = req;
+    if ( !id || !forum_id ) {
+        let res = {
+            status: 400,
+            body: "Missing parameters",
+        }
+        return JSON.stringify(res);
+    }
+
+    let user = User.findById(id);
+    if (!user) {
+        let res = {
+            status: 400,
+            body: "User does not exist",
+        }
+        return JSON.stringify(res);
+    }
+
+    let forum = Forum.findById(forum_id);
+    if (!forum) {
+        let res = {
+            status: 400,
+            body: "Thread does not exist",
+        }
+        return JSON.stringify(res);
+    }
+
+    let found = user.favorites.indexOf(forum_id);
+    if (found < 0) {
+        let res = {
+            status: 400,
+            body: "Thread not favorited",
+        }
+        return JSON.stringify(res);
+    }
+    user.favorites.splice(found, 1)
+    forum.favorited_by--;
+
+    await user.save();
+    await forum.save();
+
+    let res = {
+        status: 200,
+        body: "Ok"
+    }
+    return JSON.stringify(res);
+}
+
+
 
 const amqp = require('amqplib/callback_api');
 amqp.connect(rabbitMQ, function (error0, connection) {
