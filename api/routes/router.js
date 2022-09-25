@@ -9,7 +9,11 @@ router.get('/logout', UserAPI.logoutUser)
 
 
 router.post('/postthread', ForumAPI.postThread)
-router.get
+router.get('/getCookThreadList',ForumAPI.getCookThreadList);
+router.get('/getEatThreadList',ForumAPI.getEatThreadList);
+router.get('getThread',ForumAPI.getThread);
+router.search('/searchCookThread',ForumAPI.searchCookThread);
+router.search('/searchEatThread',ForumAPI.searchEatThread);
 
 
 module.exports = router

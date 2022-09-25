@@ -22,7 +22,7 @@ getEatThreadList = async (req, res) => {
 
 getThread = async (req, res) => {
     req = req.body;
-    return await assert("getCookThread", req, res);
+    return await assert("getThread", req, res);
 }
 
 searchCookThread = async (req, res) => {
@@ -118,7 +118,7 @@ module.exports = {
     postThread,
     getCookThreadList,
     getEatThreadList,
-    getCookThread,
+    getThread,
     searchCookThread,
     searchEatThread,
 }
