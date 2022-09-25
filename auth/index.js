@@ -162,7 +162,7 @@ const getUserById = async (req) => {
       user: {
         name: user.name,
         email: user.email,
-        Id: user._id
+        id: user._id
       }
     }
     return JSON.stringify(res) 

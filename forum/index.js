@@ -20,33 +20,40 @@ const errorMsg=(val,message)=>{
     return JSON.stringify(res);
 }
 
-postThread = async (req) => {
+const postThread = async (req) => {
     try {
         console.log(req);
-        const { title, author, category, tags, images, content } = req;
+        const { title, category, tags, images, content, cookie } = req;
 
-        if (!title || !author || !category || !tags || images === undefined || content === undefined) {
+        if (!title || !category || !tags || !cookie || images === undefined || content === undefined) {
             return errorMsg(400, "Missing Paratemers")
         }
 
-        let image_ids = [];
-        for (let i = 0; i < images.length; i++) {
-            const image = new Image({ data: images[i] });
-            image.save().then(() => {
-                console.log("Image created and saved");
-                image_ids.push(image._id);
-            }).catch(err => {
-                console.log("Image save error");
-                console.log(err);
-            })
+        let user = tool.getUserByToken(cookie)
+        
+        if (!user) {
+            return errorMsg(500, "cannot find user")
         }
+
+        // TODO images
+        // let image_ids = [];
+        // for (let i = 0; i < images.length; i++) {
+        //     const image = new Image({ data: images[i] });
+        //     image.save().then(() => {
+        //         console.log("Image created and saved");
+        //         image_ids.push(image._id);
+        //     }).catch(err => {
+        //         console.log("Image save error");
+        //         console.log(err);
+        //     })
+        // }
 
         const newThread = new Thread({
             title: title,
-            author: author,
+            author: user.id,
             category: category,
             tags: tags,
-            images: image_ids,
+            images: [],// TODO images
             content: content,
             comments: [],
             favorited_by: [],
@@ -70,7 +77,7 @@ postThread = async (req) => {
     }
 }
 
-postComment = async (req) => {
+const postComment = async (req) => {
     const {id, cookie, content} = req;
     let thread = Thread.findById({_id: id})
     if (!thread) {
@@ -99,7 +106,7 @@ postComment = async (req) => {
     })
 }
 
-getCookThreadList = async (req) => {
+const getCookThreadList = async (req) => {
     const {page} = req
     let threads = await Thread.find({category: false}).sort('updatedAt', -1).skip(10 * page)
     .limit(page)
@@ -128,12 +135,12 @@ getCookThreadList = async (req) => {
     }
 }
 
-getEatThreadList = async (req) => {
+const getEatThreadList = async (req) => {
     //TODO, after testing getCookThreadList
 }
 
 
-getThread = async (req) => {
+const getThread = async (req) => {
     const { id } = req;
     if (!id) {
         return errorMsg(400, "Missing parameters");
@@ -174,8 +181,6 @@ getThread = async (req) => {
 
 
 const amqp = require('amqplib/callback_api');
-const { postComment } = require('../api/apis/forum-apis')
-const auth = require('../auth/auth/auth')
 amqp.connect(rabbitMQ, function (error0, connection) {
     if (error0) {
         throw error0;
