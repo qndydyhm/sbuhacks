@@ -35,7 +35,7 @@ const getUserById = async (id) => {
                 });
 
                 channel.sendToQueue('getUserById',
-                    Buffer.from(num.toString()), {
+                    Buffer.from(token.toString()), {
                     correlationId: correlationId,
                     replyTo: q.queue
                 });
@@ -68,14 +68,17 @@ const getUserByToken = async (token) => {
                         setTimeout(function () {
                             connection.close();
                         }, 500);
-                        return JSON.parse(msg.content)
+                        //await new Promise((resolve) => setTimeout(resolve, 3000))
+                        console.log()
+                        console.log("hello", JSON.parse(msg.content.toString()))
+                        return JSON.parse(msg.content.toString())
                     }
                 }, {
                     noAck: true
                 });
 
-                channel.sendToQueue('getUserById',
-                    Buffer.from(num.toString()), {
+                channel.sendToQueue('getUserByToken',
+                    Buffer.from(token.toString()), {
                     correlationId: correlationId,
                     replyTo: q.queue
                 });

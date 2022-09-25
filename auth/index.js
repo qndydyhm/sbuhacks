@@ -148,6 +148,7 @@ const login = async (req) => {
 }
 
 const getUserById = async (req) => {
+  console.log(req)
   const user = await User.findById({_id: req});
   if (!user) {
     let res = {
@@ -170,6 +171,7 @@ const getUserById = async (req) => {
 }
 
 const getUserByToken = async (req) => {
+  console.log("req:",req)
   let id = getUserId(req)
   if (id !== 'Guest') {
     return getUserById(id)

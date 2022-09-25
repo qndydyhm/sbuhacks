@@ -10,11 +10,11 @@ const rabbitMQ = config.rabbitMQ
 
 db.on('error', console.error.bind(console, "MongoDB Atlas connection error"))
 
-const errorMsg=(val,message)=>{
-    let res={
-        status:val,
-         body:{
-            msg:message
+const errorMsg = (val, message) => {
+    let res = {
+        status: val,
+        body: {
+            msg: message
         }
     }
     return JSON.stringify(res);
@@ -29,8 +29,9 @@ const postThread = async (req) => {
             return errorMsg(400, "Missing Paratemers")
         }
 
-        let user = tool.getUserByToken(cookie)
-        
+        const likes = await tool.getUserByToken(cookie)
+        console.log(likes)     // console.log("user: ", user)
+
         if (!user) {
             return errorMsg(500, "cannot find user")
         }
@@ -59,18 +60,27 @@ const postThread = async (req) => {
             favorited_by: [],
         })
 
-        newThread.save().then(() => {
-            console.log("New thread created");
-            let res = {
-                status: 200,
-                body: "Ok",
+        // newThread.save().then(() => {
+        //     console.log("New thread created");
+        //     let res = {
+        //         status: 200,
+        //         body: "Ok",
+        //     }
+        //     return JSON.stringify(res);
+        // }).catch(err => {
+        //     console.log("New thread error -- not created");
+        //     console.log(errorMsg(500, "Server Error"))
+        //     return errorMsg(500, "Server Error");
+        // });
+        let thread = await newThread.save()
+        console.log(thread)
+        let res = {
+            status: 200,
+            body: {
+                msg: "ok"
             }
-            return JSON.stringify(res);
-        }).catch(err => {
-            console.log("New thread error -- not created");
-            console.log(errorMsg(500, "Server Error"))
-            return errorMsg(500, "Server Error");
-        });
+        }
+        return JSON.stringify(res)
     }
     catch (err) {
         console.error(err);
@@ -79,8 +89,8 @@ const postThread = async (req) => {
 }
 
 const postComment = async (req) => {
-    const {id, cookie, content} = req;
-    let thread = Thread.findById({_id: id})
+    const { id, cookie, content } = req;
+    let thread = Thread.findById({ _id: id })
     if (!thread) {
         return errorMsg(400, "Fail to find thread")
     }
@@ -108,11 +118,11 @@ const postComment = async (req) => {
 }
 
 const getCookThreadList = async (req) => {
-    const {page} = req
-    let threads = await Thread.find({category: false}).sort('updatedAt', -1).skip(10 * page)
-    .limit(page)
+    const { page } = req
+    let threads = await Thread.find({ category: false }).sort('updatedAt', -1).skip(10 * page)
+        .limit(page)
     if (!threads) {
-        return errorMsg(404,"Index out of range");
+        return errorMsg(404, "Index out of range");
     }
     else {
         for (let index = 0; index < threads.length; index++) {
@@ -149,18 +159,18 @@ const getThread = async (req) => {
     else {
         const thread = await Thread.findById({ _id: id })
         if (!thread) {
-            return errorMsg(500,"Thread does not exist!");
+            return errorMsg(500, "Thread does not exist!");
         }
         else {
             // TODO image
             for (let index = 0; index < thread.comments.length; index++) {
                 const commentId = thread.comments[index];
-                let comment = Comment.findById({_id: commentId})
+                let comment = Comment.findById({ _id: commentId })
                 if (!comment) {
                     return errorMsg(500, "Internal error");
                 }
                 if (comment.forum !== id) {
-                    return errorMsg(500,"Internal error");
+                    return errorMsg(500, "Internal error");
                 }
                 let author = tool.getUserById(comment.author)
                 if (author) {
@@ -199,6 +209,7 @@ amqp.connect(rabbitMQ, function (error0, connection) {
         console.log(' [x] Awaiting RPC requests');
         channel.consume(queue, function reply(msg) {
             postThread(JSON.parse(msg.content.toString())).then((res) => {
+                console.log(res)
                 channel.sendToQueue(msg.properties.replyTo,
                     Buffer.from(res.toString()), {
                     correlationId: msg.properties.correlationId
