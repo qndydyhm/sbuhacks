@@ -22,6 +22,11 @@ post_thread = async(req) => {
             return JSON.stringify(res);
         }
 
+        for (let i = 0; i < images.length; i++) {
+            const image = new Image({ data: images[i] });
+            
+        }
+
         const newForum = new Forum({
             title: title,
             author: author,
@@ -33,12 +38,22 @@ post_thread = async(req) => {
             favorited_by: favorited_by,
         })
 
-        await newForum.save();
-        let res = {
-            status: 200,
-            body: "Missing parameters",
-        }
-        return JSON.stringify(res);
+        newForum.save().then(() => {
+            console.log("New forum created");
+            let res = {
+                status: 200,
+                body: "Missing parameters",
+            }
+            return JSON.stringify(res);
+        }).catch(err => {
+            console.log("New forum error -- not created");
+            console.error(err);
+            let res = {
+                status: 500,
+                body: "server error"
+            }
+            return JSON.stringify(res)
+        });
     }
     catch (err) {
         console.error(err);
@@ -62,7 +77,7 @@ update_thread = async(req) => {
         return JSON.stringify(res);
     }
 
-    const forum = Forum.findById(id);
+    const forum = await Forum.findById(id);
     if (!forum) {
         let res = {
             status: 400,
@@ -79,7 +94,6 @@ update_thread = async(req) => {
 
 }
 
-
 delete_thread = async(req) => {
     console.log(req);
     const { id } = req;
@@ -91,12 +105,23 @@ delete_thread = async(req) => {
         return JSON.stringify(res);
     }
 
-    await Forum.findByIdAndDelete(id);
-    let res = {
-        status: 200,
-        body: "Ok"
-    }
-    return JSON.stringify(res);
+    Forum.findByIdAndDelete(id).then(() => {
+        console.log("Thread deleted");
+        let res = {
+            status: 200,
+            body: "Ok"
+        }
+        return JSON.stringify(res);
+    }).catch(err => {
+        console.log("Forum deletion error");
+        console.log(err);
+        let res = {
+            status: 500,
+            body: "Server error",
+        }
+        return JSON.stringify(res);
+    });
+
 }
 
 
@@ -139,16 +164,34 @@ favorite = async(req) => {
     user.favorites.push(forum_id);
     forum.favorited_by++;
 
-    await user.save();
-    await forum.save();
-
-    let res = {
-        status: 200,
-        body: "Ok"
-    }
-    return JSON.stringify(res);
+    user.save().then(() => {
+        console.log("User favorites updated");
+        forum.save().then(() => {
+            console.log("Thread favorite updated")
+            let res = {
+                status: 200,
+                body: "Ok"
+            }
+            return JSON.stringify(res);
+        }).catch(err => {
+            console.log("Thread favorite error");
+            console.log(err);
+            let res = {
+                status: 500,
+                body: "Server error",
+            }
+            return JSON.stringify(res);
+        })
+    }).catch(err => {
+        console.log("User favorite error");
+        console.log(err);
+        let res = {
+            status: 500,
+            body: "Server error",
+        }
+        return JSON.stringify(res);
+    });
 }
-
 
 unfavorite = async(req) => {
     const { id, forum_id } = req;
@@ -178,27 +221,45 @@ unfavorite = async(req) => {
         return JSON.stringify(res);
     }
 
-    let found = user.favorites.indexOf(forum_id);
-    if (found < 0) {
+    let found = user.favorites.indexOf(forum_id)
+    if (found >= 0) {
         let res = {
             status: 400,
-            body: "Thread not favorited",
+            body: "Thread already favorited",
         }
         return JSON.stringify(res);
     }
-    user.favorites.splice(found, 1)
+    user.favorites.splice(found, 1);
     forum.favorited_by--;
 
-    await user.save();
-    await forum.save();
-
-    let res = {
-        status: 200,
-        body: "Ok"
-    }
-    return JSON.stringify(res);
+    user.save().then(() => {
+        console.log("User unfavorites updated");
+        forum.save().then(() => {
+            console.log("Thread unfavorite updated");
+            let res = {
+                status: 200,
+                body: "Ok"
+            }
+            return JSON.stringify(res);
+        }).catch(err => {
+            console.log("Thread unfavorite error");
+            console.log(err);
+            let res = {
+                status: 500,
+                body: "Server error",
+            }
+            return JSON.stringify(res);
+        })
+    }).catch(err => {
+        console.log("User unfavorite error");
+        console.log(err);
+        let res = {
+            status: 500,
+            body: "Server error",
+        }
+        return JSON.stringify(res);
+    });
 }
-
 
 get_random_thread_list = async(req) => {
 
