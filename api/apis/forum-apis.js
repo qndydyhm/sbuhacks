@@ -20,7 +20,7 @@ getEatThreadList = async (req, res) => {
     return await assert("getEatThreadList", req, res);
 }
 
-getCookThread = async (req, res) => {
+getThread = async (req, res) => {
     req = req.body;
     return await assert("getCookThread", req, res);
 }
