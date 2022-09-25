@@ -16,4 +16,4 @@ const ForumSchema = new Schema(
     { timestamps: true }
 )
 
-module.exports = mongoose.model('ThreadSchema', ForumSchema);
+module.exports = mongoose.model('Thread', ForumSchema);
