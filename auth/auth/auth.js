@@ -2,7 +2,7 @@ const jwt = require("jsonwebtoken")
 const config = require('../config')
 
 function authManager() {
-    getUserID = function (token) {
+    getUserId = function (token) {
         try {
             if (!token) {
                 return 'Guest';

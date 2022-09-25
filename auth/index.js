@@ -147,6 +147,41 @@ const login = async (req) => {
   }
 }
 
+const getUserById = async (req) => {
+  const user = await User.findById({_id: req});
+  if (!user) {
+    let res = {
+      found: false,
+      user: {}
+    }
+    return JSON.stringify(res)
+  }
+  else {
+    let res = {
+      found: true,
+      user: {
+        name: user.name,
+        email: user.email,
+        Id: user._id
+      }
+    }
+    return JSON.stringify(res) 
+  }
+}
+
+const getUserByToken = async (req) => {
+  let id = getUserId(req)
+  if (id !== 'Guest') {
+    return getUserById(id)
+  }
+  else {
+    let res = {
+      found: false,
+      user: {}
+    }
+    return JSON.stringify(res)
+  }
+}
 
 const amqp = require('amqplib/callback_api');
 amqp.connect(rabbitMQ, function (error0, connection) {
@@ -189,6 +224,52 @@ amqp.connect(rabbitMQ, function (error0, connection) {
     console.log(' [x] Awaiting RPC requests');
     channel.consume(queue, function reply(msg) {
       login(JSON.parse(msg.content.toString())).then((res) => {
+        channel.sendToQueue(msg.properties.replyTo,
+          Buffer.from(res.toString()), {
+          correlationId: msg.properties.correlationId
+        });
+
+        channel.ack(msg);
+      })
+    });
+  });
+
+  connection.createChannel(function (error1, channel) {
+    if (error1) {
+      throw error1;
+    }
+    var queue = 'getUserById';
+
+    channel.assertQueue(queue, {
+      durable: false
+    });
+    channel.prefetch(1);
+    console.log(' [x] Awaiting RPC requests');
+    channel.consume(queue, function reply(msg) {
+      getUserById(msg.content.toString()).then((res) => {
+        channel.sendToQueue(msg.properties.replyTo,
+          Buffer.from(res.toString()), {
+          correlationId: msg.properties.correlationId
+        });
+
+        channel.ack(msg);
+      })
+    });
+  });
+
+  connection.createChannel(function (error1, channel) {
+    if (error1) {
+      throw error1;
+    }
+    var queue = 'getUserByToken';
+
+    channel.assertQueue(queue, {
+      durable: false
+    });
+    channel.prefetch(1);
+    console.log(' [x] Awaiting RPC requests');
+    channel.consume(queue, function reply(msg) {
+      getUserByToken(msg.content.toString()).then((res) => {
         channel.sendToQueue(msg.properties.replyTo,
           Buffer.from(res.toString()), {
           correlationId: msg.properties.correlationId
