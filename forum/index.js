@@ -10,15 +10,18 @@ const rabbitMQ = config.rabbitMQ
 
 db.on('error', console.error.bind(console, "MongoDB Atlas connection error"))
 
-error_400 = (msg) => {
-    let res = {
-        status: 400,
-        body: {
-            msg: msg
+errorMSG=(val,message)=>{
+    let res={
+        status:val,
+         body:{
+            msg:message
         }
     }
     return JSON.stringify(res);
 }
+
+
+
 
 serverError = () => {
     let res = {
@@ -116,13 +119,7 @@ getCookThreadList = async (req) => {
     let threads = await Thread.find({category: false}).sort('updatedAt', -1).skip(10 * page)
     .limit(page)
     if (!threads) {
-        let res = {
-            status: 404,
-            body: {
-                msg: "Index out of range"
-            }
-        }
-        return JSON.stringify(res)
+        return errorMSG(404,"Index out of range");
     }
     else {
         for (let index = 0; index < threads.length; index++) {
@@ -150,25 +147,16 @@ getEatThreadList = async (req) => {
     //TODO, after testing getCookThreadList
 }
 
+
 getThread = async (req) => {
     const { id } = req;
     if (!id) {
-        let res = {
-            status: 400,
-            body: "Missing parameters",
-        }
-        return JSON.stringify(res);
+        return errorMsg(400, "Missing parameters");
     }
     else {
         const thread = await Thread.findById({ _id: id })
         if (!thread) {
-            let res = {
-                status: 500,
-                body: {
-                    msg: "Thread does not exist!"
-                }
-            }
-            return JSON.stringify(res)
+            return errorMSG(500,"Thread does not exist!");
         }
         else {
             // TODO image
@@ -176,22 +164,10 @@ getThread = async (req) => {
                 const commentId = thread.comments[index];
                 let comment = Comment.findById({_id: commentId})
                 if (!comment) {
-                    let res = {
-                        status: 500,
-                        body: {
-                            msg: "Internal error"
-                        }
-                    }
-                    return JSON.stringify(res)
+                    return errorMSG(500, "Internal error");
                 }
                 if (comment.forum !== id) {
-                    let res = {
-                        status: 500,
-                        body: {
-                            msg: "Internal error"
-                        }
-                    }
-                    return JSON.stringify(res)
+                    return errorMSG(500,"Internal error");
                 }
                 let author = tool.getUserById(comment.author)
                 if (author) {
