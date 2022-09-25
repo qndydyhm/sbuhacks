@@ -7,7 +7,7 @@ const ForumSchema = new Schema(
         title: { type: String, required: true },
         author: { type: ObjectId, required: true },
         category: { type: Boolean, required: true },
-        tag: { type: [String], required: true },
+        tags: { type: [String], required: true },
         images: { type: [ObjectId], required: true },
         content: { type: String, required: true }, 
         comments: { type: [ObjectId], required: true },
